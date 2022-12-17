@@ -12,7 +12,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   return await loadElectricitryPrices(kioskSettings.electricityRegion);
 };
 
-export type ElectricityRawResponse = {
+type ElectricityRawResponse = {
   date: string;
   updated: string;
   price: Record<ElectricityRegion['id'], number>;
@@ -34,7 +34,7 @@ export type ElectricityResponse = {
   prices: ElectricityResponsePrice[];
 };
 
-export const loadElectricitryPrices = async (electricityRegion: string) => {
+export const loadElectricitryPrices = async (electricityRegion: string): Promise<ElectricityResponse> => {
   const date = format(new Date(), 'yyyy-MM-dd');
   const results: ElectricityRawResponse = await fetch(`https://redutv-api.vg.no/power-data/v2/nordpool/price-by-date/${date}`, {
     headers: { 'Content-Type': 'application/json' },

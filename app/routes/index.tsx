@@ -74,14 +74,14 @@ export default function Index() {
     <Grid>
       <Card sx={{ gridColumn: 'span 2' }} variant='outlined'>
         <Typography level='h1' textAlign='center'>
-          Konfigurer din infoskjerm
+          Konfigurer infoskjermen
         </Typography>
       </Card>
       <Card variant='outlined'>
         <Typography level='h2'>Velg strømregion</Typography>
         <Typography>Velg hvilken strømregion du tilhører og vil se dagens strømpriser for</Typography>
         <Form method='post'>
-          <RadioGroup aria-label='Velg strømregion' defaultValue={electricityRegion || ELECTRICITY_REGIONS[2].id} name='electricityRegion'>
+          <RadioGroup aria-label='Velg strømregion' defaultValue={electricityRegion ? electricityRegion : undefined} name='electricityRegion'>
             <List
               sx={(theme) => ({
                 '--List-gap': theme.spacing(1),
@@ -147,9 +147,12 @@ export default function Index() {
           </Stack>
         </Form>
       </Card>
-      <Button component={Link} disabled={!stopPlace || !electricityRegion} sx={{ gridColumn: 'span 2' }} to={`/s`}>
-        Åpne infoskjerm
-      </Button>
+      <Stack gap={1} sx={{ gridColumn: 'span 2' }}>
+        {(!stopPlace || !electricityRegion) && <Typography textAlign='center'>Strømregion og holdeplass må velges før infoskjermen kan åpnes</Typography>}
+        <Button component={Link} disabled={!stopPlace || !electricityRegion} to={`/s`}>
+          Åpne infoskjerm
+        </Button>
+      </Stack>
     </Grid>
   );
 }

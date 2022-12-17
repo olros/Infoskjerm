@@ -4,10 +4,12 @@ import { redirect } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import { Departures } from '~/components/Departures';
 import { Electricity } from '~/components/Electricity';
+import { Weather } from '~/components/Weather';
 import { getKioskSettings } from '~/cookies.server';
 
 import { loadStopPlaceDepartures } from './api.entur.departures';
 import { loadElectricitryPrices } from './api.vg.electricity';
+import { loadWeather } from './api.yr.weather';
 
 const Grid = styled('div')(({ theme }) => ({
   display: 'grid',
@@ -25,14 +27,17 @@ export const loader = async ({ request }: LoaderArgs) => {
     throw redirect('/');
   }
 
-  const departures = await loadStopPlaceDepartures(kioskSettings.stopPlace);
-  const electricitryPrices = await loadElectricitryPrices(kioskSettings.electricityRegion);
+  const [departures, electricitryPrices, weather] = await Promise.all([
+    loadStopPlaceDepartures(kioskSettings.stopPlace),
+    loadElectricitryPrices(kioskSettings.electricityRegion),
+    loadWeather(kioskSettings.stopPlace),
+  ]);
 
-  return { departures, electricitryPrices };
+  return { departures, electricitryPrices, weather };
 };
 
 export default function Infoscreen() {
-  const { departures, electricitryPrices } = useLoaderData<typeof loader>();
+  const { departures, electricitryPrices, weather } = useLoaderData<typeof loader>();
 
   return (
     <Grid>
@@ -44,7 +49,8 @@ export default function Infoscreen() {
         <Departures departuresResponse={departures} />
       </Card>
       <Card variant='outlined'>
-        <Typography level='h2'>Vær</Typography>
+        <Typography level='h2'>Været nå</Typography>
+        <Weather weatherResponse={weather} />
       </Card>
     </Grid>
   );

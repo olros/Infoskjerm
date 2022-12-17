@@ -1,7 +1,7 @@
 import { keyframes } from '@emotion/react';
 import { Card, Stack, styled, Typography } from '@mui/joy';
 import { useFetcher } from '@remix-run/react';
-import { differenceInMinutes, format, parseISO } from 'date-fns';
+import { differenceInMinutes, format, parseISO, secondsToMilliseconds } from 'date-fns';
 import { nb } from 'date-fns/locale';
 import { useInterval } from 'usehooks-ts';
 
@@ -41,9 +41,7 @@ export type DeparturesProps = {
 export const Departures = ({ departuresResponse }: DeparturesProps) => {
   const fetcher = useFetcher<DeparturesResponse>();
 
-  useInterval(() => {
-    fetcher.load(`/api/entur/departures`);
-  }, 10_000);
+  useInterval(() => fetcher.load(`/api/entur/departures`), secondsToMilliseconds(10));
 
   const stopPlace = fetcher.data ? fetcher.data.data.stopPlace : departuresResponse.data.stopPlace;
   return (

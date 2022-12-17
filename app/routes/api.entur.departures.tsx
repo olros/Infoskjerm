@@ -36,7 +36,7 @@ export const loader = async ({ request }: LoaderArgs) => {
   return await loadStopPlaceDepartures(kioskSettings.stopPlace);
 };
 
-export const loadStopPlaceDepartures = async (stopPlace: StopPlace) => {
+export const loadStopPlaceDepartures = async (stopPlace: StopPlace): Promise<DeparturesResponse> => {
   const query = `
 {
   stopPlace(id: "${stopPlace.id}") {
