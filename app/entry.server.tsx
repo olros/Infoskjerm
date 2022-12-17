@@ -3,11 +3,10 @@ import createEmotionServer from '@emotion/server/create-instance';
 import { CssBaseline, CssVarsProvider } from '@mui/joy';
 import type { EntryContext } from '@remix-run/node';
 import { RemixServer } from '@remix-run/react';
-import { theme } from '~/theme';
-import { renderToString } from 'react-dom/server';
-
 import { createEmotionCache } from '~/styles/createEmotionCache';
 import ServerStyleContext from '~/styles/server.context';
+import { theme } from '~/theme';
+import { renderToString } from 'react-dom/server';
 
 export default function handleRequest(request: Request, responseStatusCode: number, responseHeaders: Headers, remixContext: EntryContext) {
   const cache = createEmotionCache();
