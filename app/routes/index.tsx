@@ -3,6 +3,7 @@ import type { ActionArgs, LoaderArgs } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Form, Link, useFetcher, useLoaderData } from '@remix-run/react';
 import type { KioskSessionData } from '~/cookies.server';
+import { getKioskSettings } from '~/cookies.server';
 import { kioskSession } from '~/cookies.server';
 import { useEffect, useState } from 'react';
 import { useDebounce } from 'usehooks-ts';
@@ -32,15 +33,7 @@ const Grid = styled('div')(({ theme }) => ({
 }));
 
 export const loader = async ({ request }: LoaderArgs) => {
-  const session = await kioskSession.getSession(request.headers?.get('Cookie'));
-  const data: KioskSessionData = { electricityRegion: null, stopPlace: null };
-  if (session.has('electricityRegion')) {
-    data['electricityRegion'] = session.get('electricityRegion') as KioskSessionData['electricityRegion'];
-  }
-  if (session.has('stopPlace')) {
-    data['stopPlace'] = JSON.parse(session.get('stopPlace')) as KioskSessionData['stopPlace'];
-  }
-  return data;
+  return getKioskSettings(request);
 };
 
 export const action = async ({ request }: ActionArgs) => {

@@ -25,3 +25,15 @@ export const kioskSession = createCookieSessionStorage({
     maxAge: hoursToSeconds(24 * 365 * 2), // 2 years
   },
 });
+
+export const getKioskSettings = async (request: Request) => {
+  const session = await kioskSession.getSession(request.headers?.get('Cookie'));
+  const data: KioskSessionData = { electricityRegion: null, stopPlace: null };
+  if (session.has('electricityRegion')) {
+    data['electricityRegion'] = session.get('electricityRegion') as KioskSessionData['electricityRegion'];
+  }
+  if (session.has('stopPlace')) {
+    data['stopPlace'] = JSON.parse(session.get('stopPlace')) as KioskSessionData['stopPlace'];
+  }
+  return data;
+};
