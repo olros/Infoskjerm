@@ -10,6 +10,8 @@ import { useDebounce } from 'usehooks-ts';
 
 import type { StopPlace } from './api.entur.search';
 
+export { ErrorBoundary } from '~/components/ErrorBoundary';
+
 export type ElectricityRegion = {
   id: string;
   label: string;

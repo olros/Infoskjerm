@@ -12,6 +12,8 @@ import { loadStopPlaceDepartures } from './api.entur.departures';
 import { loadElectricitryPrices } from './api.vg.electricity';
 import { loadWeather } from './api.yr.weather';
 
+export { ErrorBoundary } from '~/components/ErrorBoundary';
+
 const Grid = styled('div')(({ theme }) => ({
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',

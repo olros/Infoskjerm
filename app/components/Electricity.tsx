@@ -1,7 +1,7 @@
 import { Box, Typography } from '@mui/joy';
 import { useFetcher } from '@remix-run/react';
 import { getHours, minutesToMilliseconds } from 'date-fns';
-import { useLayoutEffect } from 'react';
+import { useEffect } from 'react';
 import { useMemo, useState } from 'react';
 import type { AxisOptions, UserSerie } from 'react-charts';
 import { Chart } from 'react-charts';
@@ -27,7 +27,7 @@ export const Electricity = ({ electricityResponse }: ElectricityProps) => {
 
   const data: UserSerie<ElectricityResponsePrice>[] = [{ label: 'Pris', data: response.prices }];
 
-  useLayoutEffect(() => setHour(getHours(new Date())), []);
+  useEffect(() => setHour(getHours(new Date())), []);
 
   useInterval(() => setHour(getHours(new Date())), minutesToMilliseconds(1));
   useInterval(() => fetcher.load(`/api/vg/electricity`), minutesToMilliseconds(10));
