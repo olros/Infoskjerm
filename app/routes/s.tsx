@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Card, styled, Typography } from '@mui/joy';
 import type { LoaderArgs } from '@remix-run/node';
 import { redirect } from '@remix-run/node';

@@ -3,9 +3,8 @@ import { getKioskSettings } from '~/cookies.server';
 
 import type { StopPlace } from './api.entur.search';
 
-export type Departure = {
+type DepartureRaw = {
   realtime: boolean;
-  aimedDepartureTime: string;
   expectedDepartureTime: string;
   destinationDisplay: {
     frontText: string;
@@ -18,20 +17,33 @@ export type Departure = {
   };
 };
 
-export type DeparturesResponse = {
+type DeparturesRawResponse = {
   data: {
     stopPlace: {
       id: string;
       name: string;
-      estimatedCalls: Departure[];
+      estimatedCalls: DepartureRaw[];
     };
   };
+};
+
+export type Departure = {
+  publicCode: string;
+  frontText: string;
+  realtime: boolean;
+  departureTime: string;
+  id: string;
+};
+
+export type DeparturesResponse = {
+  name: string;
+  departures: Departure[];
 };
 
 export const loader = async ({ request }: LoaderArgs) => {
   const kioskSettings = await getKioskSettings(request);
   if (!kioskSettings.stopPlace) {
-    return [];
+    return null;
   }
   return await loadStopPlaceDepartures(kioskSettings.stopPlace);
 };
@@ -48,7 +60,6 @@ export const loadStopPlaceDepartures = async (stopPlace: StopPlace): Promise<Dep
       arrivalDeparture: departures
     ) {
       realtime
-      aimedDepartureTime
       expectedDepartureTime
       destinationDisplay {
         frontText
@@ -62,12 +73,21 @@ export const loadStopPlaceDepartures = async (stopPlace: StopPlace): Promise<Dep
     }
   }
 }`;
-  const results: DeparturesResponse = await fetch(`https://api.entur.io/journey-planner/v3/graphql`, {
+  const results: DeparturesRawResponse = await fetch(`https://api.entur.io/journey-planner/v3/graphql`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'ET-Client-Name': 'infoskjerm.olafros.com' },
     body: JSON.stringify({ query }),
   })
     .then((r) => r.json())
     .catch((e) => console.error(e));
-  return results;
+  return {
+    name: results.data.stopPlace.name,
+    departures: results.data.stopPlace.estimatedCalls.map((call) => ({
+      departureTime: call.expectedDepartureTime,
+      frontText: call.destinationDisplay.frontText,
+      publicCode: call.serviceJourney.line.publicCode,
+      realtime: call.realtime,
+      id: call.serviceJourney.id,
+    })),
+  };
 };

@@ -1,8 +1,7 @@
-import { withEmotionCache } from '@emotion/react';
 import styled from '@emotion/styled';
 import type { MetaFunction } from '@remix-run/node';
 import { Links, LiveReload, Meta, Outlet, Scripts, ScrollRestoration, useCatch } from '@remix-run/react';
-import ServerStyleContext from '~/styles/server.context';
+import StylesContext from '~/styles/server.context';
 import { useContext } from 'react';
 
 export const meta: MetaFunction = () => ({
@@ -13,19 +12,21 @@ export const meta: MetaFunction = () => ({
 
 interface DocumentProps {
   children: React.ReactNode;
-  title?: string;
 }
 
-const Document = withEmotionCache(({ children, title }: DocumentProps, emotionCache) => {
-  const serverStyleData = useContext(ServerStyleContext);
+const Document = ({ children }: DocumentProps) => {
+  const styleData = useContext(StylesContext);
 
   return (
     <html lang='no'>
       <head>
-        {title ? <title>{title}</title> : null}
+        <link href='/apple-touch-icon.png' rel='apple-touch-icon' sizes='180x180' />
+        <link href='/favicon-32x32.png' rel='icon' sizes='32x32' type='image/png' />
+        <link href='/favicon-16x16.png' rel='icon' sizes='16x16' type='image/png' />
+        <link href='/manifest.json' rel='manifest' />
         <Meta />
         <Links />
-        {serverStyleData?.map(({ key, ids, css }) => (
+        {styleData?.map(({ key, ids, css }) => (
           <style
             // eslint-disable-next-line react/no-danger
             dangerouslySetInnerHTML={{ __html: css }}
@@ -42,7 +43,7 @@ const Document = withEmotionCache(({ children, title }: DocumentProps, emotionCa
       </body>
     </html>
   );
-});
+};
 
 export default function App() {
   return (
@@ -61,7 +62,7 @@ export function CatchBoundary() {
   const caught = useCatch();
 
   return (
-    <Document title={`${caught.status} ${caught.statusText}`}>
+    <Document>
       <Container>
         <p>
           [CatchBoundary]: {caught.status} {caught.statusText}
@@ -73,7 +74,7 @@ export function CatchBoundary() {
 
 export function ErrorBoundary({ error }: { error: Error }) {
   return (
-    <Document title='Error!'>
+    <Document>
       <Container>
         <p>[ErrorBoundary]: There was an error: {error.message}</p>
       </Container>

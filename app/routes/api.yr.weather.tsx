@@ -59,7 +59,7 @@ export type WeatherResponse = {
 export const loader = async ({ request }: LoaderArgs) => {
   const kioskSettings = await getKioskSettings(request);
   if (!kioskSettings.stopPlace) {
-    return [];
+    return null;
   }
   return await loadWeather(kioskSettings.stopPlace);
 };

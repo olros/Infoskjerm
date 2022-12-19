@@ -1,22 +1,12 @@
 import { keyframes } from '@emotion/react';
 import { Card, Stack, styled, Typography } from '@mui/joy';
 import { useFetcher } from '@remix-run/react';
-import { differenceInMinutes, format, parseISO, secondsToMilliseconds } from 'date-fns';
-import { nb } from 'date-fns/locale';
+import { secondsToMilliseconds } from 'date-fns';
 import { useInterval } from 'usehooks-ts';
 
 import type { DeparturesResponse } from '~/routes/api.entur.departures';
 
-const formatTime = (date: Date) => {
-  const minutesUntil = differenceInMinutes(date, new Date());
-  if (minutesUntil < 1) {
-    return 'Nå';
-  }
-  if (minutesUntil < 15) {
-    return `${minutesUntil} min`;
-  }
-  return format(date, 'HH:mm', { locale: nb });
-};
+import { useFormattedDate } from './IntlDate';
 
 const pulse = keyframes(
   { '0%': { boxShadow: '0 0 0 0 #1a7d3699' } },
@@ -41,29 +31,28 @@ export type DeparturesProps = {
 export const Departures = ({ departuresResponse }: DeparturesProps) => {
   const fetcher = useFetcher<DeparturesResponse>();
 
+  const formatDate = useFormattedDate();
+
   useInterval(() => fetcher.load(`/api/entur/departures`), secondsToMilliseconds(10));
 
-  const stopPlace = fetcher.data ? fetcher.data.data.stopPlace : departuresResponse.data.stopPlace;
+  const data = fetcher.data ? fetcher.data : departuresResponse;
   return (
     <>
-      <Typography level='h2'>{stopPlace.name}</Typography>
+      <Typography level='h2'>{data.name}</Typography>
       <Stack gap={1} sx={{ overflow: 'auto' }}>
-        {stopPlace.estimatedCalls.map((call) => (
-          <Card
-            key={call.serviceJourney.id}
-            sx={{ p: 0.5, display: 'grid', gap: 1, gridTemplateColumns: '60px 1fr auto auto', alignItems: 'center' }}
-            variant='outlined'>
+        {data.departures.map((call) => (
+          <Card key={call.id} sx={{ p: 0.5, display: 'grid', gap: 1, gridTemplateColumns: '60px 1fr auto auto', alignItems: 'center' }} variant='outlined'>
             <Card sx={{ p: 1 }} variant='soft'>
               <Typography fontSize='1.3rem' fontWeight='bold' level='h3' textAlign='center'>
-                {call.serviceJourney.line.publicCode}
+                {call.publicCode}
               </Typography>
             </Card>
             <Typography fontSize='1.3rem' fontWeight='bold' level='h3'>
-              {call.destinationDisplay.frontText}
+              {call.frontText}
             </Typography>
             <Pulse sx={{ opacity: call.realtime ? 1 : 0 }} />
             <Typography fontSize='1.3rem' fontWeight='bold' level='h3' sx={{ mr: 1 }}>
-              {formatTime(parseISO(call.expectedDepartureTime))}
+              {formatDate(call.departureTime, { hour: '2-digit', minute: '2-digit' })}
             </Typography>
           </Card>
         ))}

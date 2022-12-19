@@ -3,37 +3,48 @@ import createEmotionServer from '@emotion/server/create-instance';
 import { CssBaseline, CssVarsProvider } from '@mui/joy';
 import type { EntryContext } from '@remix-run/node';
 import { RemixServer } from '@remix-run/react';
+import { LocaleContextProvider } from '~/LocaleProvider';
 import { createEmotionCache } from '~/styles/createEmotionCache';
-import ServerStyleContext from '~/styles/server.context';
+import StylesContext from '~/styles/server.context';
 import { theme } from '~/theme';
+import { parseAcceptLanguage } from 'intl-parse-accept-language';
 import { renderToString } from 'react-dom/server';
 
 export default function handleRequest(request: Request, responseStatusCode: number, responseHeaders: Headers, remixContext: EntryContext) {
   const cache = createEmotionCache();
   const { extractCriticalToChunks } = createEmotionServer(cache);
 
-  const html = renderToString(
-    <ServerStyleContext.Provider value={null}>
-      <CacheProvider value={cache}>
+  const acceptLanguage = request.headers.get('accept-language');
+  const locales = parseAcceptLanguage(acceptLanguage, {
+    validate: Intl.DateTimeFormat.supportedLocalesOf,
+  });
+
+  const MuiRemixServer = () => (
+    <CacheProvider value={cache}>
+      <LocaleContextProvider locales={locales}>
         <CssVarsProvider defaultColorScheme='dark' defaultMode='dark' theme={theme}>
           <CssBaseline />
           <RemixServer context={remixContext} url={request.url} />
         </CssVarsProvider>
-      </CacheProvider>
-    </ServerStyleContext.Provider>,
+      </LocaleContextProvider>
+    </CacheProvider>
   );
 
-  const chunks = extractCriticalToChunks(html);
+  // Render the component to a string.
+  const html = renderToString(
+    <StylesContext.Provider value={null}>
+      <MuiRemixServer />
+    </StylesContext.Provider>,
+  );
 
+  // Grab the CSS from emotion
+  const emotionChunks = extractCriticalToChunks(html);
+
+  // Re-render including the extracted css.
   const markup = renderToString(
-    <ServerStyleContext.Provider value={chunks.styles}>
-      <CacheProvider value={cache}>
-        <CssVarsProvider defaultColorScheme='dark' defaultMode='dark' theme={theme}>
-          <CssBaseline />
-          <RemixServer context={remixContext} url={request.url} />
-        </CssVarsProvider>
-      </CacheProvider>
-    </ServerStyleContext.Provider>,
+    <StylesContext.Provider value={emotionChunks.styles}>
+      <MuiRemixServer />
+    </StylesContext.Provider>,
   );
 
   responseHeaders.set('Content-Type', 'text/html');
